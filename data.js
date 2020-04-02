@@ -538,4 +538,15 @@ const data = {
         "castellonR":"0",
         "alicanteR":"7",
     },
+    "04-01":{
+        "valencia":"215",
+        "castellon":"47",
+        "alicante":"152",
+        "valenciaM":"28",
+        "castellonM":"8",
+        "alicanteM":"20",
+        "valenciaR":"31",
+        "castellonR":"0",
+        "alicanteR":"9",
+    },
 }
