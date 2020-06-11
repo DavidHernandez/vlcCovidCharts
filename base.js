@@ -1,9 +1,12 @@
 
-const url ='https://geoportal.valencia.es/arcgis/rest/services/OCI/Covid19_Map/MapServer/1/query?f=json'
-  + '&where=(provincia%3D%27Castellon%27%20OR%20provincia%3D%27Castell%C3%B3%27%20OR%20provincia%3D%27Valencia%27%20OR%20provincia%3D%27Alicante%27%20OR%20provincia%3D%27Alacant%27%20OR%20provincia%3D%27València%27)'
-  + '&returnGeometry=false&spatialRel=esriSpatialRelIntersects'
-  + '&outFields=altas%2Ccasos%2Cfallecidos%2Cprovincia%2Cfecha'
-  + '&orderByFields=fecha%20asc&resultOffset=0&resultRecordCount=10000'
+const url = "https://services6.arcgis.com/POowwbv4rcaNpUgV/arcgis/rest/services/acumulados_comunitatvalenciana/FeatureServer/0/query?"
+  + "f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Data%20asc&resultOffset=0"
+  + "&resultRecordCount=32000&resultType=standard&cacheHint=true"
+//const url ='https://geoportal.valencia.es/arcgis/rest/services/OCI/Covid19_Map/MapServer/1/query?f=json'
+  //+ '&where=(provincia%3D%27Castellon%27%20OR%20provincia%3D%27Castell%C3%B3%27%20OR%20provincia%3D%27Valencia%27%20OR%20provincia%3D%27Alicante%27%20OR%20provincia%3D%27Alacant%27%20OR%20provincia%3D%27València%27)'
+  //+ '&returnGeometry=false&spatialRel=esriSpatialRelIntersects'
+  //+ '&outFields=altas%2Ccasos%2Cfallecidos%2Cprovincia%2Cfecha'
+  //+ '&orderByFields=fecha%20asc&resultOffset=0&resultRecordCount=10000'
 
 fetch(url)
 .then(function(response) {
@@ -16,45 +19,10 @@ fetch(url)
   processData(json.features)
 });
 
-function extractActiveCasesOfCity(data, cityInSpanish, cityInCatalonian) {
-  const items = data.filter(item => item.attributes.provincia === cityInSpanish || item.attributes.provincia === cityInCatalonian)
-
-  const cases = items.map(item => {
-    const { attributes } = item
-    return attributes.casos
-  })
-
-  return cases
-}
-
-function extractDeadCasesOfCity(data, cityInSpanish, cityInCatalonian) {
-  const items = data.filter(item => item.attributes.provincia === cityInSpanish || item.attributes.provincia === cityInCatalonian)
-
-  const cases = items.map(item => {
-    const { attributes } = item
-    return attributes.fallecidos
-  })
-
-  return cases
-}
-
-function extractRecoveredCasesOfCity(data, cityInSpanish, cityInCatalonian) {
-  const items = data.filter(item => item.attributes.provincia === cityInSpanish || item.attributes.provincia === cityInCatalonian)
-
-  const cases = items.map(item => {
-    const { attributes } = item
-    return attributes.altas
-  })
-
-  return cases
-}
-
 function extractLabels(data) {
-  const items = data.filter(item => item.attributes.provincia === 'Alicante' || item.attributes.provincia === 'Alacant')
-
-  const labels = items.map(item => {
+  const labels = data.map(item => {
     const { attributes } = item
-    const date = new Date(attributes.fecha)
+    const date = new Date(attributes.Data)
 
     return date.getDate() + '-' + (date.getMonth() + 1)
   })
@@ -65,80 +33,43 @@ function extractLabels(data) {
 function processData(data) {
   const labels = extractLabels(data)
 
-  const valenciaActiveCases = extractActiveCasesOfCity(data, 'Valencia', 'València')
-  const alicanteActiveCases = extractActiveCasesOfCity(data, 'Alicante', 'Alacant')
-  const castellonActiveCases = extractActiveCasesOfCity(data, 'Castellon', 'Castelló')
-  const valenciaDeadCases = extractDeadCasesOfCity(data, 'Valencia', 'València')
-  const alicanteDeadCases = extractDeadCasesOfCity(data, 'Alicante', 'Alacant')
-  const castellonDeadCases = extractDeadCasesOfCity(data, 'Castellon', 'Castelló')
-  const valenciaRecoveredCases = extractRecoveredCasesOfCity(data, 'Valencia', 'València')
-  const alicanteRecoveredCases = extractRecoveredCasesOfCity(data, 'Alicante', 'Alacant')
-  const castellonRecoveredCases = extractRecoveredCasesOfCity(data, 'Castellon', 'Castelló')
+  const activeCases = data.map(item => {
+    const { attributes } = item
+    return attributes.Casos_Actius
+  })
+
+  const deadCases = data.map(item => {
+    const { attributes } = item
+    return attributes.Morts
+  })
+
+  const recoveredCases = data.map(item => {
+    const { attributes } = item
+    return attributes.Recuperats
+  })
 
   const datasets = [
     {
-      label: 'Casos activos Valencia',
-      data: valenciaActiveCases,
+      label: 'Casos activos',
+      data: activeCases,
       fill: false,
       backgroundColor: '#EDBB1A',
       borderColor: '#EDBB1A',
     },
-  {
-    label: 'Casos activos alicante',
-    data: alicanteActiveCases,
-    fill: false,
-    backgroundColor: '#ffd557',
-    borderColor: '#ffd557',
-  },
-  {
-    label: 'Casos activos castellon',
-    data: castellonActiveCases,
-    fill: false,
-    backgroundColor: '#f3dc95',
-    borderColor: '#f3dc95',
-  },
-  {
-    label: 'Fallecidos Valencia',
-    data: valenciaDeadCases,
-    fill: false,
-    backgroundColor: '#f60c0c',
-    borderColor: '#f60c0c',
-  },
-  {
-    label: 'Fallecidos Alicante',
-    data: alicanteDeadCases,
-    fill: false,
-    backgroundColor: '#ff6666',
-    borderColor: '#ff6666',
-  },
-  {
-    label: 'Fallecidos castellon',
-    data: castellonDeadCases,
-    fill: false,
-    backgroundColor: '#f49999',
-    borderColor: '#f49999',
-  },
-  {
-    label: 'Recuperados Valencia',
-    data: valenciaRecoveredCases,
-    fill: false,
-    backgroundColor: '#009999',
-    borderColor: '#009999',
-  },
-  {
-    label: 'Recuperados Alicante',
-    data: alicanteRecoveredCases,
-    fill: false,
-    backgroundColor: '#2bc1c3',
-    borderColor: '#2bc1c3',
-  },
-  {
-    label: 'Recuperados castellon',
-    data: castellonRecoveredCases,
-    fill: false,
-    backgroundColor: '#81eced',
-    borderColor: '#81eced',
-  },
+    {
+      label: 'Fallecidos',
+      data: deadCases,
+      fill: false,
+      backgroundColor: '#f49999',
+      borderColor: '#f49999',
+    },
+    {
+      label: 'Recuperados',
+      data: recoveredCases,
+      fill: false,
+      backgroundColor: '#009999',
+      borderColor: '#009999',
+    },
   ]
 
   drawGraph(datasets, labels)
